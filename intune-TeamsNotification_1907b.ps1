@@ -28,6 +28,9 @@ Thanks go out to EvotecIT for creating the awesome PSTeams module! (https://gith
 # The webhook URL you got from the Incoming Webhook Connector configuration guide
 $WebhookURL = 'https://outlook.office.com/webhook/844208c0-a442-4f4b-9a37-7c1b10375320@ac3cfed8-c7d2-44d8-a151-4adad3a6e2b7/IncomingWebhook/58b1d853f31b4dbabda45fe7c3c265b9/ff7aeb45-9c78-425c-aecd-46f8b2885210'
 
+# Enable testing mode (will post to the channel on every execution of this script if set to $true (default is $false))
+$enableTesting = $false
+
 ##### Begin custom logic #####
 
 # Put any custom logic here, that you need to generate output for the Buttons or Facts in the notification.
@@ -92,6 +95,11 @@ $Buttons = [ordered]@{
 ####################################################################################################
 
 function isNewInstall () {
+    # Determine if testing is enabled, and skip checks.
+    if ($enableTesting) {
+        return $true
+    }
+    
     # Determine if this computer was enrolled more than a day ago
     $DMClientTime = Get-ItemPropertyValue HKLM:\SOFTWARE\Microsoft\Provisioning\Diagnostics\ConfigManager\DMClient -Name Time -ErrorAction SilentlyContinue | Get-Date
     $nowMinus24Hours = (get-date).AddHours(-24)
