@@ -26,7 +26,7 @@ Thanks go out to EvotecIT for creating the awesome PSTeams module! (https://gith
 ####################################################################################################
 
 # The webhook URL you got from the Incoming Webhook Connector configuration guide
-$WebhookURL = 'https://outlook.office.com/webhook/844208c0-a442-4f4b-9a37-7c1b10375320@ac3cfed8-c7d2-44d8-a151-4adad3a6e2b7/IncomingWebhook/58b1d853f31b4dbabda45fe7c3c265b9/ff7aeb45-9c78-425c-aecd-46f8b2885210'
+$WebhookURL = 'https://outlook.office.com/webhook/844208xrthrxtjxb10375320@ac3cfed8-c7xrtjxrtjd3a6e2b7/IncomingWebhook/58b1d853f3xjrxjrtjrxfe7c3c265b9/ff7xjrjxtrjtrjxt8b2885210'
 
 # Enable testing mode (will post to the channel on every execution of this script if set to $true (default is $false))
 $enableTesting = $false
@@ -56,6 +56,7 @@ $enableTesting = $false
 ##### Design section starts here, and will determine the look of the notification
 
 # The color of top border of the Teams notification card.
+# Find more cool color names here: https://encycolorpedia.com/1e90ff
 $Color = [RGBColors]::DodgerBlue
 
 # The first two lines of our Notification
