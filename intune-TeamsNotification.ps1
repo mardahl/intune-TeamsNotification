@@ -1,4 +1,5 @@
 ﻿#Requires -Version 5.0
+#Requires -runasadministrator
 <#
 .SYNOPSIS
 Sends a notification to a specified Teams Channel.
@@ -8,7 +9,7 @@ This script will send detailed information about an enrolled computer to a prede
 Run the script from a Win32app package or just as a PowerShell Configuration script *executed as system.
 .NOTES
 NAME: Intune-TeamsNotification.ps1
-VERSION: 1907b
+VERSION: 1907d
 PREREQ: Microsoft Teams (Duh!) 
     - Install the Incoming Webhook Connector to your Teams Channel.
     - Internet connectivity to the webhook and to psgallery
@@ -29,65 +30,66 @@ Thanks go out to EvotecIT for creating the awesome PSTeams module! (https://gith
 $WebhookURL = 'https://outlook.office.com/webhook/844208xrthrxtjxb10375320@ac3cfed8-c7xrtjxrtjd3a6e2b7/IncomingWebhook/58b1d853f3xjrxjrtjrxfe7c3c265b9/ff7xjrjxtrjtrjxt8b2885210'
 
 # Enable testing mode (will post to the channel on every execution of this script if set to $true (default is $false))
-$enableTesting = $false
+$enableTesting = $true
 
-##### Begin custom logic #####
+function customizations () {
+    
+    ##### Begin custom logic #####
 
-# Put any custom logic here, that you need to generate output for the Buttons or Facts in the notification.
-# I have added som example code as an inspiration
+        # Put any custom logic here, that you need to generate output for the Buttons or Facts in the notification.
+        # I have added som example code as an inspiration
 
+        # Get logged in user
+        $currentUser = Get-WMIObject -class Win32_ComputerSystem | select -ExpandProperty username
 
-    # Get logged in user
-    $currentUser = Get-WMIObject -class Win32_ComputerSystem | select -ExpandProperty username
+        # Get teamviewer ID (if available)
+        try { $teamviewerID = Get-ItemProperty -Path HKLM:\SOFTWARE\WOW6432Node\TeamViewer -ErrorAction Stop | select -ExpandProperty ClientID } catch { $teamviewerID = "N/A" }
 
-    # Get teamviewer ID (if available)
-    try { $teamviewerID = Get-ItemProperty -Path HKLM:\SOFTWARE\WOW6432Node\TeamViewer -ErrorAction Stop | select -ExpandProperty ClientID } catch { $teamviewerID = "N/A" }
+        # Get OS install date
+        $installDate = ([WMI]'').ConvertToDateTime((Get-WmiObject Win32_OperatingSystem).InstallDate).ToString()
 
-    # Get OS install date
-    $installDate = ([WMI]'').ConvertToDateTime((Get-WmiObject Win32_OperatingSystem).InstallDate).ToString()
+        # Get a nice display friendly OS Name
+        $OSinfo = Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+        $OSDisplayName = "$($OSinfo.ProductName) $($OSinfo.ReleaseID)"
 
-    # Get a nice display friendly OS Name
-    $OSinfo = Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
-    $OSDisplayName = "$($OSinfo.ProductName) $($OSinfo.ReleaseID)"
+    ##### End custom logic #####
 
+    ##### Design section starts here, and will determine the look of the notification
 
-##### End custom logic #####
+        # The color of top border of the Teams notification card.
+        # Find more cool color names here: https://encycolorpedia.com/1e90ff
+        $Color = "DodgerBlue"
 
-##### Design section starts here, and will determine the look of the notification
+        # The first two lines of our Notification
+        $messageTitle = "$($env:COMPUTERNAME) just enrolled!"
+        $messageText = "But it might not be finished provisioning yet...."
 
-# The color of top border of the Teams notification card.
-# Find more cool color names here: https://encycolorpedia.com/1e90ff
-$Color = [RGBColors]::DodgerBlue
+        $activityTitle = "Intune says... "
+        $activitySubtitle = "I am collecting data about this device."
+        $activityText = "You might find the following facts interesting!"
+        $activityImageLink = "https://static-s.aa-cdn.net/img/gp/20600001711818/unUtqpVgwh3J6h_C4wmb0_Zc4ZuESSFejC9eJ8APpa8qy7EV1ulb1x9NufuSuBwm8A=w300"
 
-# The first two lines of our Notification
-$messageTitle = "$($env:COMPUTERNAME) just enrolled!"
-$messageText = "But it might not be finished provisioning yet...."
+        # Tables containing facts and buttons you wish to show in the notification
+        # Add a new line for each fact / button, labels MUST be unique!
+        # Fact Example: "Fact Label"="Custom text"
+        # Button Example: "Button Label"="https://custom.url"
+        # Markup: You can add markup to the custom text by wrapping a word or some text with *'s
+        # ***Italic and Bold*** - **Bold** - *Italic*
+        # Links: You can add links within the text, like so: [scconfigmgr](https://www.scconfigmgr.com)
 
-$activityTitle = "Intune says... "
-$activitySubtitle = "I am collecting data about this device."
-$activityText = "You might find the following facts interesting!"
-$activityImageLink = "https://static-s.aa-cdn.net/img/gp/20600001711818/unUtqpVgwh3J6h_C4wmb0_Zc4ZuESSFejC9eJ8APpa8qy7EV1ulb1x9NufuSuBwm8A=w300"
+        $facts = [ordered]@{
+            "Computername"      = "$($env:COMPUTERNAME)"
+            "Operating System"  = "$OSDisplayName"
+            "Install Date"      = "$installDate"
+            "TeamViewerID"      = "$teamviewerID"
+        }
 
-# Tables containing facts and buttons you wish to show in the notification
-# Add a new line for each fact / button, labels MUST be unique!
-# Fact Example: "Fact Label"="Custom text"
-# Button Example: "Button Label"="https://custom.url"
-# Markup: You can add markup to the custom text by wrapping a word or some text with *'s
-# ***Italic and Bold*** - **Bold** - *Italic*
-# Links: You can add links within the text, like so: [scconfigmgr](https://www.scconfigmgr.com)
+        $Buttons = [ordered]@{
+            "Visit scconfigmgr.com"  = "https://www.scconfigmgr.com"
+            "Visit iphase.dk"        = "https://www.iphase.dk"
+        }
 
-$facts = [ordered]@{
-    "Computername"      = "$($env:COMPUTERNAME)"
-    "Operating System"  = "$OSDisplayName"
-    "Install Date"      = "$installDate"
-    "TeamViewerID"      = "$teamviewerID"
 }
-
-$Buttons = [ordered]@{
-    "Visit scconfigmgr.com"  = "https://www.scconfigmgr.com"
-    "Visit iphase.dk"        = "https://www.iphase.dk"
-}
-
 
 ####################################################################################################
 #
@@ -126,11 +128,11 @@ function Install-PSTeams () {
         try {
             Install-Module PSTeams -Force -ErrorAction Stop
         } catch {
-            Write-Error "Failed to install the required PSTeams Module! Better check your self, before you wreck your self!"
-            exit 1
+            Throw "Failed to install the required PSTeams Module! Better check your self, before you wreck your self!"
         }        
     } else {
         Update-Module PSTeams
+        Import-Module PSTeams
     }
 }
 
@@ -163,6 +165,15 @@ if ((isNewInstall) -eq $false) {
 
 # Installing the PSTeams Module if unavailable
 Install-PSTeams
+
+# Running customizations
+try { 
+    $ErrorActionPreference = "Stop"
+    customizations
+} catch {
+    Throw "Errors in CustomLogic section, please review and fix!"
+}
+$ErrorActionPreference = "Continue"
 
 # Building the notification design
 $Section1 = New-TeamsSection `
