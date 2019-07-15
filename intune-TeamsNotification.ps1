@@ -32,64 +32,60 @@ $WebhookURL = 'https://outlook.office.com/webhook/844208xrthrxtjxb10375320@ac3cf
 # Enable testing mode (will post to the channel on every execution of this script if set to $true (default is $false))
 $enableTesting = $true
 
-function customizations () {
-    
-    ##### Begin custom logic #####
+##### Begin custom logic #####
 
-        # Put any custom logic here, that you need to generate output for the Buttons or Facts in the notification.
-        # I have added som example code as an inspiration
+    # Put any custom logic here, that you need to generate output for the Buttons or Facts in the notification.
+    # I have added som example code as an inspiration
 
-        # Get logged in user
-        $currentUser = Get-WMIObject -class Win32_ComputerSystem | select -ExpandProperty username
+    # Get logged in user
+    $currentUser = Get-WMIObject -class Win32_ComputerSystem | select -ExpandProperty username
 
-        # Get teamviewer ID (if available)
-        try { $teamviewerID = Get-ItemProperty -Path HKLM:\SOFTWARE\WOW6432Node\TeamViewer -ErrorAction Stop | select -ExpandProperty ClientID } catch { $teamviewerID = "N/A" }
+    # Get teamviewer ID (if available)
+    try { $teamviewerID = Get-ItemProperty -Path HKLM:\SOFTWARE\WOW6432Node\TeamViewer -ErrorAction Stop | select -ExpandProperty ClientID } catch { $teamviewerID = "N/A" }
 
-        # Get OS install date
-        $installDate = ([WMI]'').ConvertToDateTime((Get-WmiObject Win32_OperatingSystem).InstallDate).ToString()
+    # Get OS install date
+    $myinstallDate = ([WMI]'').ConvertToDateTime((Get-WmiObject Win32_OperatingSystem).InstallDate).ToString()
 
-        # Get a nice display friendly OS Name
-        $OSinfo = Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
-        $OSDisplayName = "$($OSinfo.ProductName) $($OSinfo.ReleaseID)"
+    # Get a nice display friendly OS Name
+    $OSinfo = Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+    $OSDisplayName = "$($OSinfo.ProductName) $($OSinfo.ReleaseID)"
 
-    ##### End custom logic #####
+##### End custom logic #####
 
-    ##### Design section starts here, and will determine the look of the notification
+##### Design section starts here, and will determine the look of the notification
 
-        # The color of top border of the Teams notification card.
-        # Find more cool color names here: https://encycolorpedia.com/1e90ff
-        $Color = "DodgerBlue"
+    # The color of top border of the Teams notification card.
+    # Find more cool color names here: https://encycolorpedia.com/1e90ff
+    $Color = "DodgerBlue"
 
-        # The first two lines of our Notification
-        $messageTitle = "$($env:COMPUTERNAME) just enrolled!"
-        $messageText = "But it might not be finished provisioning yet...."
+    # The first two lines of our Notification
+    $messageTitle = "$($env:COMPUTERNAME) just enrolled!"
+    $messageText = "But it might not be finished provisioning yet...."
 
-        $activityTitle = "Intune says... "
-        $activitySubtitle = "I am collecting data about this device."
-        $activityText = "You might find the following facts interesting!"
-        $activityImageLink = "https://static-s.aa-cdn.net/img/gp/20600001711818/unUtqpVgwh3J6h_C4wmb0_Zc4ZuESSFejC9eJ8APpa8qy7EV1ulb1x9NufuSuBwm8A=w300"
+    $activityTitle = "Intune says... "
+    $activitySubtitle = "I am collecting data about this device."
+    $activityText = "You might find the following facts interesting!"
+    $activityImageLink = "https://static-s.aa-cdn.net/img/gp/20600001711818/unUtqpVgwh3J6h_C4wmb0_Zc4ZuESSFejC9eJ8APpa8qy7EV1ulb1x9NufuSuBwm8A=w300"
 
-        # Tables containing facts and buttons you wish to show in the notification
-        # Add a new line for each fact / button, labels MUST be unique!
-        # Fact Example: "Fact Label"="Custom text"
-        # Button Example: "Button Label"="https://custom.url"
-        # Markup: You can add markup to the custom text by wrapping a word or some text with *'s
-        # ***Italic and Bold*** - **Bold** - *Italic*
-        # Links: You can add links within the text, like so: [scconfigmgr](https://www.scconfigmgr.com)
+    # Tables containing facts and buttons you wish to show in the notification
+    # Add a new line for each fact / button, labels MUST be unique!
+    # Fact Example: "Fact Label"="Custom text"
+    # Button Example: "Button Label"="https://custom.url"
+    # Markup: You can add markup to the custom text by wrapping a word or some text with *'s
+    # ***Italic and Bold*** - **Bold** - *Italic*
+    # Links: You can add links within the text, like so: [scconfigmgr](https://www.scconfigmgr.com)
 
-        $facts = [ordered]@{
-            "Computername"      = "$($env:COMPUTERNAME)"
-            "Operating System"  = "$OSDisplayName"
-            "Install Date"      = "$installDate"
-            "TeamViewerID"      = "$teamviewerID"
-        }
+    $facts = [ordered]@{
+        "Computername"      = "$($env:COMPUTERNAME)"
+        "Operating System"  = "$OSDisplayName"
+        "Install Date"      = "$myinstallDate"
+        "TeamViewerID"      = "$teamviewerID"
+    }
 
-        $Buttons = [ordered]@{
-            "Visit scconfigmgr.com"  = "https://www.scconfigmgr.com"
-            "Visit iphase.dk"        = "https://www.iphase.dk"
-        }
-
-}
+    $Buttons = [ordered]@{
+        "Visit scconfigmgr.com"  = "https://www.scconfigmgr.com"
+        "Visit iphase.dk"        = "https://www.iphase.dk"
+    }
 
 ####################################################################################################
 #
@@ -165,15 +161,6 @@ if ((isNewInstall) -eq $false) {
 
 # Installing the PSTeams Module if unavailable
 Install-PSTeams
-
-# Running customizations
-try { 
-    $ErrorActionPreference = "Stop"
-    customizations
-} catch {
-    Throw "Errors in CustomLogic section, please review and fix!"
-}
-$ErrorActionPreference = "Continue"
 
 # Building the notification design
 $Section1 = New-TeamsSection `
