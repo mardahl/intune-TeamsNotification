@@ -30,7 +30,7 @@ Thanks go out to EvotecIT for creating the awesome PSTeams module! (https://gith
 $WebhookURL = 'https://outlook.office.com/webhook/844208xrthrxtjxb10375320@ac3cfed8-c7xrtjxrtjd3a6e2b7/IncomingWebhook/58b1d853f3xjrxjrtjrxfe7c3c265b9/ff7xjrjxtrjtrjxt8b2885210'
 
 # Enable testing mode (will post to the channel on every execution of this script if set to $true (default is $false))
-$enableTesting = $true
+$enableTesting = $false
 
 ##### Begin custom logic #####
 
