@@ -134,16 +134,16 @@ function Install-PSTeams () {
 
 function makeButtonsFromHashtable($Hashtable) {
     # Generating Buttons Code from Hashtable in config section
-    foreach ($Button in $Hastable.Keys) {
-        New-TeamsButton -Name $Button -Link $Hastable["$Button"]
+    foreach ($Button in $Hashtable.Keys) {
+        New-TeamsButton -Name $Button -Link $Hashtable["$Button"]
     }
 }
 
 function makeFactsFromHashtable($Hashtable) {
     # Generating Facts Code from Hashtable in config section
     # Currently this does not support multi-line facts, instead you will have to add those kind of facts manually.
-    foreach ($Fact in $Hastable.Keys) {
-        New-TeamsFact -Name $Fact -Value "$($Hastable["$Fact"])"
+    foreach ($Fact in $Hashtable.Keys) {
+        New-TeamsFact -Name $Fact -Value "$($Hashtable["$Fact"])"
     }
 }
 
